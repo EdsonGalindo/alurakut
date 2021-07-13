@@ -14,7 +14,7 @@ const GlobalStyle = createGlobalStyle`
     background-color: #D9E6F6;
   }
 
-  @__next {
+  #__next {
     display: flex;
     min-height: 100vh;
     flex-direction: column;
