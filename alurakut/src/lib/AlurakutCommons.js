@@ -54,11 +54,13 @@ export function AlurakutMenu({ githubUser }) {
 }
 AlurakutMenu.Wrapper = styled.header`
   width: 100%;
-  background-color: #308BC5;
+  background-color: #000000; /*Old: 308BC5*/
+  opacity: ${({ isMenuOpen }) => isMenuOpen ? '95%' : '73%'};
 
   .alurakutMenuProfileSidebar {
+    opacity: 80%;
     background: white;
-    position: fixed;
+    position: ${({ isMenuOpen }) => isMenuOpen ? 'static' : 'absolute'};
     z-index: 100;
     padding: 46px;
     bottom: 0;
@@ -96,7 +98,7 @@ AlurakutMenu.Wrapper = styled.header`
   }
 
   .container {
-    background-color: #308BC5;
+    background-color: #000000; /*Old: 308BC5*/
     padding: 7px 16px;
     max-width: 1110px;
     margin: auto;
