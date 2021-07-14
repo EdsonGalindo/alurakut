@@ -25,7 +25,7 @@ function ProfileSideBar(propriedades) {
 function ProfileRelationsSideBar(properties)
 {
   const maxRelationsShow = properties.maxRelationsShow;
-  const relationsLimited = properties.relations.slice(0, properties.maxRelationsShow);
+  const relationsLimited = properties.relations.slice(0, maxRelationsShow);
 
   return (
     <>
@@ -51,8 +51,8 @@ function ProfileRelationsSideBar(properties)
 
 function CommunitiesSideBar(properties)
 {
-  const maxCommunitiesShow = properties.maxRelationsShow;
-  const communitiesLimited = properties.communities.slice(0, properties.maxRelationsShow);
+  const maxCommunitiesShow = properties.maxCommunitiesShow;
+  const communitiesLimited = properties.communities.slice(0, maxCommunitiesShow);
 
   return (
   <>
