@@ -22,6 +22,33 @@ function ProfileSideBar(propriedades) {
   )
 }
 
+function ProfileFollowersSideBar(properties)
+{
+  const maxFollowersShow = properties.maxFollowersShow;
+  const followersLimited = properties.followers.slice(0, maxFollowersShow);
+
+  return (
+    <>
+    <h2 className="smallTitle">
+    {properties.title} ({ properties.followers.length })
+    </h2>
+    <ul>
+      { followersLimited.map((itemAtual) => {
+          return (
+            <li key={itemAtual.login}>
+              <a href={`https://github.com/${itemAtual.login}`}>
+                <img src={`https://github.com/${itemAtual.login}.png`} />
+                <span>{itemAtual.login}</span>
+              </a>
+            </li>
+          )
+        })
+      }
+    </ul>
+    </>
+  )
+}
+
 function ProfileRelationsSideBar(properties)
 {
   const maxRelationsShow = properties.maxRelationsShow;
@@ -30,7 +57,7 @@ function ProfileRelationsSideBar(properties)
   return (
     <>
     <h2 className="smallTitle">
-    Pessoas da Comunidade ({ properties.relations.length })
+    {properties.title} ({ properties.relations.length })
     </h2>
     <ul>
       { relationsLimited.map((itemAtual) => {
@@ -57,7 +84,7 @@ function CommunitiesSideBar(properties)
   return (
   <>
   <h2 className="smallTitle">
-    Comunidades ({ properties.communities.length })
+    {properties.title} ({ properties.communities.length })
   </h2>
   <ul>
     { communitiesLimited.map((itemAtual) => {
@@ -91,7 +118,19 @@ export default function Home() {
     'marcobrunodev',
     'felipefialho',
     'robertaarcoverde'
-  ];  
+  ];
+  
+  const [seguidores, setSeguidores] = React.useState([]);
+  
+  React.useEffect(function () { 
+    fetch('https://api.github.com/users/peas/followers')
+    .then(function (respostaDoServidor) {
+        return respostaDoServidor.json();
+    })
+    .then(function (respostaCompleta){
+      setSeguidores(respostaCompleta);
+    })
+  }, [])
 
   return (
     <>
@@ -146,11 +185,14 @@ export default function Home() {
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
           <ProfileRelationsBoxWrapper>
-            <CommunitiesSideBar communities={comunidades} maxCommunitiesShow={6} />
-          </ProfileRelationsBoxWrapper>
+            <ProfileFollowersSideBar title={'Seguidores'} followers={seguidores} maxFollowersShow={6} />
+          </ProfileRelationsBoxWrapper> 
           <ProfileRelationsBoxWrapper>
-            <ProfileRelationsSideBar relations={pessoasFavoritas} maxRelationsShow={6} />
-          </ProfileRelationsBoxWrapper>   
+            <CommunitiesSideBar title={'Minhas comunidades'} communities={comunidades} maxCommunitiesShow={6} />
+          </ProfileRelationsBoxWrapper> 
+          <ProfileRelationsBoxWrapper>
+            <ProfileRelationsSideBar title={'Pessoas da comunidade'} relations={pessoasFavoritas} maxRelationsShow={6} />
+          </ProfileRelationsBoxWrapper>  
         </div>   
       </MainGrid>
     </>
