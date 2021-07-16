@@ -269,7 +269,18 @@ export async function getServerSideProps(context) {
   const token = cookies.USER_TOKEN;
   const decodedToken = jwt.decode(token);
   const githubUser = decodedToken?.githubUser;
-  
+
+  // Se não retornou a propriedade githubUser no token volta pra página de login e informa o erro em tela
+  if (!token)
+  {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
   // Se não retornou a propriedade githubUser no token volta pra página de login e informa o erro em tela
   if (!githubUser)
   {
