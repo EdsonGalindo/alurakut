@@ -7,12 +7,12 @@ import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations';
 function ProfileSideBar(propriedades) {
   return (
     <Box as="aside">
-      <img src={`https://github.com/${propriedades.githubUser}.png`} style={{ borderRadius: '8px' }}></img>
+      <img src={`https://github.com/${propriedades.usuarioLogado}.png`} style={{ borderRadius: '8px' }}></img>
       <hr />
 
       <p>
-        <a className="boxLink" href={ 'https://github.com/${propriedades.githubUser}' }>
-          @{ propriedades.githubUser }
+        <a className="boxLink" href={ 'https://github.com/${propriedades.usuarioLogado}' }>
+          @{ propriedades.usuarioLogado }
         </a>
       </p>
       <hr />
@@ -90,8 +90,8 @@ function CommunitiesSideBar(properties)
     { communitiesLimited.map((itemAtual) => {
         return (
           <li key={itemAtual.id}>
-            <a href={`/users/${itemAtual.title}`}>
-              <img src={itemAtual.image} /> 
+            <a href={`/users/${itemAtual.id}`}>
+              <img src={itemAtual.imageUrl} /> 
               <span>{itemAtual.title}</span>
             </a>
           </li>
@@ -104,12 +104,8 @@ function CommunitiesSideBar(properties)
 }
 
 export default function Home() {
-  const githubUser = 'EdsonGalindo';
-  const [comunidades, setComunidades] = React.useState([{
-    id: new Date().toISOString(),
-    title: 'Eu odeio acordar cedo',
-    image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg', //image: 'http://placehold.it/300x300',
-  }]);
+  const usuarioLogado = 'edsongalindo';
+  const [comunidades, setComunidades] = React.useState([]);
   const pessoasFavoritas = [
     'juunegreiros',
     'omariosouto',
@@ -130,14 +126,48 @@ export default function Home() {
     .then(function (respostaCompleta){
       setSeguidores(respostaCompleta);
     })
+
+    // API GraphQL do DatoCMS
+    fetch('https://graphql.datocms.com/', {
+      method: 'POST',
+      headers: {
+        'Authorization' : '9bfc3a30ccf94cf0bd23996f0f7d27',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ "query": `query {
+          allCommunities{
+            title
+            id
+            imageUrl
+            creatorSlug
+          }
+        }`})
+    })
+    .then((response) => response.json())
+    .then((respostaCompleta) => {
+      const comunidadesDatoCMS = respostaCompleta.data.allCommunities;
+      setComunidades(comunidadesDatoCMS);
+    })
+
   }, [])
+
+  
+  const [state, setState] = React.useState({
+    title: "",
+    image: "",
+  });
+
+  function handleChange(event){
+    setState({ ...state, [event.target.name]: event.target.value });
+  };
 
   return (
     <>
-      <AlurakutMenu githubUser={githubUser} />
+      <AlurakutMenu githubUser={usuarioLogado} />
       <MainGrid>
         <div className="profileArea" style={{ gridArea: 'profileArea' }}>
-          <ProfileSideBar githubUser={githubUser} />
+          <ProfileSideBar usuarioLogado={usuarioLogado} />
         </div>
         <div className="welcomeArea" style={{ gridArea: 'welcomeArea' }}>
           <Box>
@@ -155,17 +185,47 @@ export default function Home() {
               const dadosDoForm = new FormData(e.target);
 
               const comunidade = {
-                id: new Date().toISOString(),
                 title: dadosDoForm.get('title'),
-                image: dadosDoForm.get('image'),
+                imageUrl: dadosDoForm.get('image'),
+                creatorSlug: usuarioLogado,
               }
-              const comunidadesAtualizadas = [...comunidades, comunidade];
-              setComunidades(comunidadesAtualizadas);
+
+              fetch('/api/comunidades', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(comunidade)
+              })
+              .then(async (response) => {
+                if (response.status != 200)
+                {
+                  alert('Erro ao incluir a comunidade :( \nTente novamente mais tarde!');
+                  return;
+                }
+
+                const dadosReponse = await response.json();
+
+                if (response.status == 200)
+                {
+                  alert('Comunidade incluída com sucesso :D');
+                }
+
+                const comunidade = dadosReponse.registroCriado;
+                const comunidadesAtualizadas = [...comunidades, comunidade];
+                setComunidades(comunidadesAtualizadas);
+
+                // Limpa o formulário após inclusão da comunidade
+                setState({title: ""});
+                setState({image: ""});
+              })
             }}>
               <div>
                 <input 
                   placeholder="Qual será o nome da sua comunidade?" 
                   name="title" 
+                  value={state.title}
+                  onChange={handleChange}
                   aria-label="Qual será o nome da sua comunidade?"
                   type="text"
                 />
@@ -173,7 +233,9 @@ export default function Home() {
               <div>
                 <input 
                   placeholder="Coloque uma URL para usarmos de capa" 
-                  name="image" 
+                  name="image"
+                  value={state.image}
+                  onChange={handleChange}
                   aria-label="Coloque uma URL para usarmos de capa"
                 />
               </div>
