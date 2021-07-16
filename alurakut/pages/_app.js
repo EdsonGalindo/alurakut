@@ -25,7 +25,9 @@ const GlobalStyle = createGlobalStyle`
     height: auto;
     display: block;
   }
-
+  .errorMessagesStyle {
+    color: red;
+  }
   ${AlurakutStyles}
 `
 

@@ -3,6 +3,8 @@ import MainGrid from '../src/components/MainGrid';
 import Box from '../src/components/Box';
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons';
 import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations';
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
 
 function ProfileSideBar(propriedades) {
   return (
@@ -103,8 +105,8 @@ function CommunitiesSideBar(properties)
   )
 }
 
-export default function Home() {
-  const usuarioLogado = 'edsongalindo';
+export default function Home(props) {
+  const usuarioLogado = props.githubUser;
   const [comunidades, setComunidades] = React.useState([]);
   const pessoasFavoritas = [
     'juunegreiros',
@@ -259,4 +261,48 @@ export default function Home() {
       </MainGrid>
     </>
   )
+}
+
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context);
+  const token = cookies.USER_TOKEN;
+  const decodedToken = jwt.decode(token);
+  const githubUser = decodedToken?.githubUser;
+  
+  // Se não retornou a propriedade githubUser no token volta pra página de login e informa o erro em tela
+  if (!githubUser)
+  {
+    return {
+      redirect: {
+        destination: '/login?error=token_undefined',
+        permanent: false,
+      },
+    };
+  }
+
+  // Verifica se o token ainda está válido
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+      Authorization: token
+    }
+  })
+  .then((respostaServidor) => respostaServidor.json())
+
+  // Se token inválido volta pra página de login e informa o erro em tela
+  if (!isAuthenticated)
+  {
+    return {
+      redirect: {
+        destination: '/login?error=auth_fail',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      githubUser
+    },
+  }
 }
